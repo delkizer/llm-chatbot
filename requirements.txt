@@ -24,6 +24,7 @@ redis==5.0.8                    # Redis 클라이언트
 python-jose==3.4.0              # JWT
 PyJWT==2.10.1
 cryptography==44.0.2
+bcrypt>=4.1.1                   # 비밀번호 해싱 (passlib 대체)
 
 # -------------------------------------------
 # HTTP Client
