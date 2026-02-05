@@ -162,12 +162,9 @@ BWF, BXL 등 여러 프로젝트에 동일하게 적용 가능한 구조
 - 세션 키: `session:{user_id}:{context_type}`
 - 저장: 현재 경기 ID, 선수 ID, 대화 히스토리
 
-### 3. 데이터 조회: 하이브리드
+### 3. 데이터 소스: Open API
 
-| 질문 유형 | 처리 방식 |
-|----------|----------|
-| 단순/자주 묻는 질문 | SQL 템플릿 사용 |
-| 복잡/예측 불가 질문 | LLM 기반 Text-to-SQL |
+Open API에서 JSON 데이터를 수집하여 정책 MD 기반으로 LLM이 해석/분석.
 
 ### 4. 응답 형식: 텍스트 + 차트
 
@@ -192,6 +189,69 @@ BWF, BXL 등 여러 프로젝트에 동일하게 적용 가능한 구조
 
 ---
 
+## 문서 정책 (Documentation Policy)
+
+### 계층 구조
+
+```
+CLAUDE.md (헌법)
+  │  프로젝트 정책, 경계 시스템, 기술 스택 정의
+  │  "전체 설계는 ARCHITECTURE.md를 따른다"
+  │
+  └→ docs/ARCHITECTURE.md (전체 목차/개요)
+       │  시스템 구조, 도메인 맵, 서브 에이전트 정책
+       │
+       ├→ docs/config/           # 설정 도메인
+       ├→ docs/auth/             # 인증 도메인
+       ├→ docs/ollama/           # LLM 연동 도메인
+       ├→ docs/session/          # 세션 관리 도메인
+       ├→ docs/chat-service/     # 챗봇 서비스 도메인
+       ├→ docs/data-layer/       # 데이터 레이어 도메인
+       ├→ docs/response-formatter/  # 응답 포맷터 도메인
+       ├→ docs/embed/            # Web Component 도메인
+       ├→ docs/testing/          # 테스트 도메인
+       ├→ docs/llm-validation/   # LLM 검증 도메인
+       └→ docs/deployment/       # 배포 도메인
+```
+
+### 핵심 원칙
+
+1. **설계 먼저, 구현 나중** — 모든 기능은 `docs/{도메인}/`에 설계 문서 작성 후 구현
+2. **ARCHITECTURE.md가 지도** — 도메인 추가/변경 시 ARCHITECTURE.md의 도메인 맵을 먼저 업데이트
+3. **도메인 격리** — 각 도메인은 독립된 폴더로 관리, 설계 문서와 관련 코드가 1:1 대응
+
+### 서브 에이전트 정책
+
+> **도메인 수정 시 서브 에이전트를 신규 생성하여 작업한다.**
+
+- 서브 에이전트는 해당 도메인의 `docs/{도메인}/` 문서와 관련 코드만 로드
+- 컨텍스트 격리로 스코프 명확화, 메인 컨텍스트 오염 방지
+- 독립된 도메인은 병렬 작업 가능
+- 상세 절차는 `docs/ARCHITECTURE.md`의 "서브 에이전트 정책" 섹션 참조
+
+### 설계 문서 작성 규칙
+
+| 항목 | 규칙 |
+|------|------|
+| 위치 | `docs/{도메인}/` 폴더 아래 |
+| 형식 | 마크다운 (.md) |
+| 번호 | `01-`, `02-` 접두사로 순서 표기 |
+| 내용 | 목표, 설계 결정, 구현 명세, 데이터 흐름 포함 |
+
+### 워크플로우
+
+```
+[새 기능 요청]
+    → ARCHITECTURE.md에서 대상 도메인 확인
+    → 서브 에이전트 생성 (도메인 컨텍스트 로드)
+    → docs/{도메인}/ 에 설계 문서 작성
+    → 사용자 검토/승인
+    → 코드 구현
+    → 구현 완료 후 ARCHITECTURE.md 상태 업데이트
+```
+
+---
+
 ## 경계 시스템 (Boundary System)
 
 ### ✅ Always (항상 수행)
@@ -203,16 +263,17 @@ BWF, BXL 등 여러 프로젝트에 동일하게 적용 가능한 구조
 | 기존 패턴 확인 | btn 프로젝트의 class_config, class_lib 패턴 따름 |
 | SKILL 파일 검증 | LLM 응답 품질 테스트 후 수정 |
 | 코드 수정 전 분석 | 문제 정의 → 코드 흐름 분석 → 근본 원인 → 수정 방안 → 사용자 승인 |
+| 설계 문서 선행 | 새 기능 구현 전 `docs/{도메인}/` 에 설계 문서 작성 → 승인 → 구현 |
 
 ### ⚠️ Ask First (승인 필요)
 
 | 항목 | 설명 |
 |------|------|
 | SKILL 파일 수정 | 분석 규칙 변경 시 승인 |
-| SQL 템플릿 추가/수정 | 쿼리 변경 시 승인 |
+| 설계 문서 수정 | 도메인 설계 변경 시 승인 |
 | 새 패키지 설치 | pip install 전 사용자 승인 |
 | LLM 모델 변경 | 모델 교체 시 승인 |
-| DB 스키마 접근 | Text-to-SQL용 스키마 정보 수정 시 |
+| ARCHITECTURE.md 수정 | 도메인 추가/변경 시 승인 |
 
 ### 🚫 Never (절대 금지)
 
@@ -221,8 +282,7 @@ BWF, BXL 등 여러 프로젝트에 동일하게 적용 가능한 구조
 | .env / 시크릿 커밋 | credentials, API 키, JWT 시크릿 커밋 금지 |
 | pip install 임의 실행 | 패키지 임의 설치 금지 |
 | 분석 없이 코드 수정 | 근본 원인 파악 없이 수정 금지 |
-| Text-to-SQL 무검증 실행 | LLM 생성 SQL은 반드시 검증 후 실행 |
-| 프로덕션 DB 직접 수정 | DML/DDL은 승인 후 실행 |
+| 설계 없이 구현 | docs/{도메인}/ 설계 문서 없이 코드 작성 금지 |
 
 ---
 
@@ -269,64 +329,28 @@ JSON 형식으로 응답 끝에 포함
 
 ---
 
-## SQL 템플릿 정책
-
-### 파일 구조
-
-```
-queries/
-├── badminton/
-│   ├── match_summary.sql     # 경기 요약
-│   ├── player_stats.sql      # 선수 통계
-│   └── shot_distribution.sql # 샷 분포
-└── baseball/                 # (추후 확장)
-```
-
-### 템플릿 형식
-
-```sql
--- 설명: 경기 요약 조회
--- Parameters: match_id
--- 관련 질문: "경기 결과 알려줘", "누가 이겼어?"
-
-SELECT ...
-FROM ...
-WHERE match_id = :match_id;
-```
-
-### 추가 절차
-
-1. 자주 묻는 질문 패턴 분석
-2. SQL 템플릿 작성
-3. Query Router에 키워드 매핑 추가
-4. 테스트 후 커밋
-
----
-
 ## 디렉토리 구조
-
-> 단계적으로 업데이트 예정
 
 ```
 llm-chatbot/
-├── CLAUDE.md                 # 현재 파일
-├── README.md                 # 프로젝트 개요
+├── CLAUDE.md                 # 프로젝트 정책 (헌법)
+├── main_http.py              # FastAPI 진입점
 ├── requirements.txt          # Python 의존성
-├── .env.example              # 환경변수 템플릿
-├── .gitignore
 │
-├── class_config/             # 설정 클래스
-├── class_lib/                # 비즈니스 로직
-├── apps/                     # API 엔드포인트
-├── queries/                  # SQL 템플릿
-├── skills/                   # SKILL 정책 파일
-├── embed/                    # Web Component
-├── docker/                   # Docker 설정
-├── scripts/                  # 실행 스크립트
-├── logs/                     # 로그
-├── docs/                     # 문서
+├── class_config/             # 설정 클래스 [config 도메인]
+├── class_lib/                # 비즈니스 로직 [auth/ollama/session/chat-service 도메인]
+├── apps/                     # API 엔드포인트 [auth/chat-service 도메인]
+├── skills/                   # SKILL 정책 파일 [chat-service 도메인]
+├── tests/                    # 테스트 [testing 도메인]
+├── scripts/                  # 실행/테스트 스크립트
 │
-└── main_http.py              # FastAPI 진입점
+├── docs/                     # 설계 문서 (도메인별)
+│   ├── ARCHITECTURE.md       # 전체 목차/개요
+│   └── {도메인}/              # 도메인별 설계 문서
+│
+├── embed/                    # Web Component (미구현) [embed 도메인]
+├── docker/                   # Docker 설정 (미구현) [deployment 도메인]
+└── logs/                     # 로그
 ```
 
 ---
@@ -391,11 +415,8 @@ cp .env.example .env
 
 | 문서 | 경로 | 설명 |
 |------|------|------|
-| 아키텍처 | `docs/ARCHITECTURE.md` | 시스템 구조 |
-| 프로젝트 구조 | `docs/PROJECT_STRUCTURE.md` | 디렉토리 상세 |
-| 개발 로드맵 | `docs/ROADMAP.md` | 개발 순서 |
-| SKILL 가이드 | `docs/SKILL_GUIDE.md` | SKILL 파일 작성법 |
-| API 명세 | `docs/API_SPEC.md` | API 엔드포인트 |
+| 시스템 아키텍처 | `docs/ARCHITECTURE.md` | **전체 목차/개요, 도메인 맵, 서브 에이전트 정책** |
+| 도메인별 설계 | `docs/{도메인}/` | 각 도메인의 상세 설계 문서 |
 
 ---
 
