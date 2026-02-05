@@ -211,7 +211,8 @@ CLAUDE.md (헌법)
        ├→ docs/embed/            # Web Component 도메인
        ├→ docs/testing/          # 테스트 도메인
        ├→ docs/llm-validation/   # LLM 검증 도메인
-       └→ docs/deployment/       # 배포 도메인
+       ├→ docs/deployment/       # 배포 도메인
+       └→ docs/changelog/        # 변경 이력 도메인
 ```
 
 ### 핵심 원칙
@@ -248,6 +249,7 @@ CLAUDE.md (헌법)
     → 사용자 검토/승인
     → 코드 구현
     → 구현 완료 후 ARCHITECTURE.md 상태 업데이트
+    → docs/changelog/ 에 변경 이력 기록
 ```
 
 ---
