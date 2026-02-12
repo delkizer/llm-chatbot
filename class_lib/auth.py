@@ -2,7 +2,8 @@ import bcrypt
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.sql import text
 from fastapi import HTTPException, status
-from jose import jwt, JWTError
+import jwt
+from jwt.exceptions import PyJWTError
 
 from class_config.class_env import Config
 from class_config.class_db import ConfigDB
@@ -104,7 +105,7 @@ class Auth:
             secret_key = self.config.jwt_secret_key or "llm-chatbot-secret-key"
             payload = jwt.decode(token, secret_key, algorithms=[self.JWT_ALGORITHM])
             return payload
-        except JWTError as e:
+        except PyJWTError as e:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail=f"Token error: {str(e)}"

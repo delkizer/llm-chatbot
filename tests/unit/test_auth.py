@@ -3,7 +3,7 @@ import bcrypt
 from datetime import datetime, timedelta, timezone
 from unittest.mock import patch, MagicMock
 from fastapi import HTTPException
-from jose import jwt
+import jwt
 
 
 # ─────────────────────────────────────────────
@@ -21,7 +21,7 @@ class TestAuthTokens:
         """Auth 인스턴스 생성 (Config, ConfigDB Mock)"""
         with patch("class_lib.auth.Config") as mock_config, \
              patch("class_lib.auth.ConfigDB") as mock_db:
-            mock_config.return_value.btn_internal_api_key = self.TEST_SECRET
+            mock_config.return_value.jwt_secret_key = self.TEST_SECRET
 
             mock_session = MagicMock()
             mock_db.return_value.get_session_factory.return_value = lambda: mock_session
@@ -149,7 +149,7 @@ class TestAuthenticateUser:
         """Auth 인스턴스 생성 (DB Session Mock 주입)"""
         with patch("class_lib.auth.Config") as mock_config, \
              patch("class_lib.auth.ConfigDB") as mock_db:
-            mock_config.return_value.btn_internal_api_key = "test-secret"
+            mock_config.return_value.jwt_secret_key = "test-secret"
             mock_db.return_value.get_session_factory.return_value = lambda: mock_session
 
             from class_lib.auth import Auth
@@ -251,7 +251,7 @@ class TestRefreshToken:
         """Auth 인스턴스 생성 (DB Session Mock 주입)"""
         with patch("class_lib.auth.Config") as mock_config, \
              patch("class_lib.auth.ConfigDB") as mock_db:
-            mock_config.return_value.btn_internal_api_key = "test-secret"
+            mock_config.return_value.jwt_secret_key = "test-secret"
             mock_db.return_value.get_session_factory.return_value = lambda: mock_session
 
             from class_lib.auth import Auth
