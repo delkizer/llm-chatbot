@@ -17,6 +17,140 @@
       color: #1f2937;
       font-size: 24px;
     }
+
+    /* ── Quick Start ── */
+    .quick-start {
+      background: #e8f4fd;
+      border: 1px solid #b8daf0;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      max-width: 960px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .quick-start-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a5276;
+    }
+    .server-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 400;
+      font-size: 13px;
+      color: #4b5563;
+      margin-left: auto;
+    }
+    .server-status .dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ef4444;
+    }
+    .server-status .dot.connected {
+      background: #22c55e;
+    }
+    .quick-start-steps {
+      display: flex;
+      gap: 16px;
+    }
+    .quick-start-step {
+      flex: 1;
+      background: #ffffff;
+      border-radius: 6px;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: #374151;
+    }
+    .quick-start-step .step-num {
+      font-weight: 700;
+      color: #2563eb;
+      margin-right: 4px;
+    }
+    .quick-start-step code {
+      display: block;
+      background: #d4e8f5;
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-size: 12px;
+      margin-top: 6px;
+      word-break: break-all;
+    }
+
+    /* ── Controls ── */
+    .controls {
+      text-align: center;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .controls label {
+      font-size: 14px;
+      color: #4b5563;
+    }
+    .controls select, .controls input {
+      padding: 4px 8px;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .controls input#token {
+      min-width: 180px;
+    }
+    .auth-area {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-login {
+      padding: 5px 14px;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn-login:hover { background: #1d4ed8; }
+    .btn-logout {
+      padding: 4px 10px;
+      background: #e5e7eb;
+      color: #374151;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .btn-logout:hover { background: #d1d5db; }
+    .auth-user-info {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #374151;
+    }
+    .auth-user-info .user-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      display: inline-block;
+    }
+
+    /* ── Chatbot Demo ── */
     .demo-container {
       display: flex;
       gap: 20px;
@@ -39,26 +173,214 @@
       width: 400px;
       height: 600px;
     }
-    .controls {
-      text-align: center;
+
+    /* ── Login Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-box {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      width: 100%;
+      max-width: 360px;
+      position: relative;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    }
+    .modal-box h3 {
+      font-size: 18px;
       margin-bottom: 20px;
+      color: #1f2937;
     }
-    .controls label {
-      margin-right: 16px;
-      font-size: 14px;
-      color: #4b5563;
+    .modal-close {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #6b7280;
+      line-height: 1;
     }
-    .controls select, .controls input {
-      padding: 4px 8px;
+    .modal-close:hover { color: #1f2937; }
+    .modal-input {
+      width: 100%;
+      padding: 10px 12px;
       border: 1px solid #d1d5db;
-      border-radius: 4px;
+      border-radius: 6px;
       font-size: 14px;
+      margin-bottom: 12px;
+      outline: none;
     }
+    .modal-input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+    }
+    .modal-btn {
+      width: 100%;
+      padding: 10px;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+    .modal-btn:hover { background: #1d4ed8; }
+    .modal-btn:disabled {
+      background: #93c5fd;
+      cursor: not-allowed;
+    }
+    .modal-error {
+      display: none;
+      color: #dc2626;
+      font-size: 13px;
+      margin-top: 10px;
+      text-align: center;
+    }
+    .modal-error.show { display: block; }
+
+    /* ── Framework Samples ── */
+    .framework-samples {
+      max-width: 960px;
+      margin: 32px auto 0;
+    }
+    .framework-samples h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .samples-info-bar {
+      background: #e8f4fd;
+      border: 1px solid #b8daf0;
+      border-radius: 8px;
+      padding: 12px 20px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: #1a5276;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .samples-info-bar code {
+      background: #d4e8f5;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+    .samples-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 800px) {
+      .samples-grid { grid-template-columns: repeat(2, 1fr); }
+      .quick-start-steps { flex-direction: column; }
+    }
+    @media (max-width: 480px) {
+      .samples-grid { grid-template-columns: 1fr; }
+    }
+    .sample-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      transition: box-shadow 0.2s, transform 0.2s;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+    }
+    .sample-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+      transform: translateY(-2px);
+    }
+    .sample-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .sample-card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .sample-card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1f2937;
+    }
+    .sample-card-desc {
+      font-size: 12px;
+      color: #6b7280;
+      line-height: 1.4;
+    }
+
+    /* Framework icon colors */
+    .bg-vanilla  { background: #f59e0b; }
+    .bg-vue      { background: #42b883; }
+    .bg-react    { background: #61dafb; color: #1a1a2e; }
+    .bg-svelte   { background: #ff3e00; }
+    .bg-nextjs   { background: #000000; }
+    .bg-angular  { background: #dd0031; }
+    .bg-htmx     { background: #3366cc; }
+    .bg-iframe   { background: #8b5cf6; }
   </style>
 </head>
 <body>
   <h1>SPO Chatbot Embed - Development</h1>
 
+  <!-- ── Quick Start ── -->
+  <div class="quick-start">
+    <div class="quick-start-header">
+      Quick Start
+      <div class="server-status">
+        <span class="dot" id="status-dot"></span>
+        <span id="status-text">연결 안됨</span>
+      </div>
+    </div>
+    <div class="quick-start-steps">
+      <div class="quick-start-step">
+        <span class="step-num">&#10102;</span> 서버 시작
+        <code>uvicorn main_http:app --port 4502 --reload</code>
+      </div>
+      <div class="quick-start-step">
+        <span class="step-num">&#10103;</span> 로그인
+        <br><span style="font-size:12px;color:#6b7280;">아래 로그인 버튼을 클릭하여 인증</span>
+      </div>
+      <div class="quick-start-step">
+        <span class="step-num">&#10104;</span> 채팅
+        <br><span style="font-size:12px;color:#6b7280;">메시지를 입력하고 전송</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Controls ── -->
   <div class="controls">
     <label>
       Theme:
@@ -74,17 +396,21 @@
     </label>
     <label>
       Token:
-      <input id="token" type="text" value="dev-test-token" size="20">
+      <input id="token" type="text" value="" size="20" placeholder="로그인 시 자동입력" readonly>
     </label>
+    <div class="auth-area" id="auth-area">
+      <button class="btn-login" id="btn-login" type="button">&#128274; 로그인</button>
+    </div>
   </div>
 
+  <!-- ── Chatbot ── -->
   <div class="demo-container">
     <div class="demo-card">
       <h2>BWF Badminton</h2>
       <spo-chatbot
         id="chatbot"
         api-url="http://localhost:4502"
-        token="dev-test-token"
+        token=""
         theme="bwf"
         context-type="badminton"
         match-id="test-match-001"
@@ -93,18 +419,281 @@
     </div>
   </div>
 
+  <!-- ── Framework Samples ── -->
+  <div class="framework-samples">
+    <h2>Framework Samples</h2>
+    <div class="samples-info-bar">
+      <span>&#9432;</span>
+      <span>게이트웨이 실행:</span>
+      <code>cd embed/samples && uvicorn gateway:app --port 5174 --reload</code>
+    </div>
+    <div class="samples-grid">
+      <a class="sample-card" href="http://localhost:5174/sample/vanilla/" target="_blank">
+        <div class="sample-card-header">
+          <div class="sample-card-icon bg-vanilla">V</div>
+          <div class="sample-card-title">Vanilla HTML</div>
+        </div>
+        <div class="sample-card-desc">순수 HTML/JS 최소 구성</div>
+      </a>
+      <a class="sample-card" href="http://localhost:5174/sample/vue3/" target="_blank">
+        <div class="sample-card-header">
+          <div class="sample-card-icon bg-vue">V</div>
+          <div class="sample-card-title">Vue 3</div>
+        </div>
+        <div class="sample-card-desc">Composition API + isCustomElement</div>
+      </a>
+      <a class="sample-card" href="http://localhost:5174/sample/react/" target="_blank">
+        <div class="sample-card-header">
+          <div class="sample-card-icon bg-react">R</div>
+          <div class="sample-card-title">React</div>
+        </div>
+        <div class="sample-card-desc">useRef + setAttribute 바인딩</div>
+      </a>
+      <a class="sample-card" href="http://localhost:5174/sample/svelte/" target="_blank">
+        <div class="sample-card-header">
+          <div class="sample-card-icon bg-svelte">S</div>
+          <div class="sample-card-title">Svelte</div>
+        </div>
+        <div class="sample-card-desc">네이티브 커스텀 엘리먼트 지원</div>
+      </a>
+      <a class="sample-card" href="http://localhost:5174/sample/nextjs/" target="_blank">
+        <div class="sample-card-header">
+          <div class="sample-card-icon bg-nextjs">N</div>
+          <div class="sample-card-title">Next.js</div>
+        </div>
+        <div class="sample-card-desc">SSR dynamic import + CSR 전용</div>
+      </a>
+      <a class="sample-card" href="http://localhost:5174/sample/angular/" target="_blank">
+        <div class="sample-card-header">
+          <div class="sample-card-icon bg-angular">A</div>
+          <div class="sample-card-title">Angular</div>
+        </div>
+        <div class="sample-card-desc">CUSTOM_ELEMENTS_SCHEMA</div>
+      </a>
+      <a class="sample-card" href="http://localhost:5174/sample/htmx/" target="_blank">
+        <div class="sample-card-header">
+          <div class="sample-card-icon bg-htmx">H</div>
+          <div class="sample-card-title">HTMX</div>
+        </div>
+        <div class="sample-card-desc">Jinja2 SSR + HTMX 공존</div>
+      </a>
+      <a class="sample-card" href="http://localhost:5174/sample/iframe/" target="_blank">
+        <div class="sample-card-header">
+          <div class="sample-card-icon bg-iframe">I</div>
+          <div class="sample-card-title">iframe</div>
+        </div>
+        <div class="sample-card-desc">postMessage 기반 통신</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- ── Login Modal ── -->
+  <div class="modal-overlay" id="login-modal">
+    <div class="modal-box">
+      <button class="modal-close" id="modal-close" type="button">&#10005;</button>
+      <h3>로그인</h3>
+      <input class="modal-input" id="login-email" type="email" placeholder="이메일">
+      <input class="modal-input" id="login-password" type="password" placeholder="비밀번호">
+      <button class="modal-btn" id="modal-login-btn" type="button">로그인</button>
+      <div class="modal-error" id="modal-error">로그인 실패: 이메일 또는 비밀번호를 확인하세요</div>
+    </div>
+  </div>
+
   <script type="module" src="/src/spo-chatbot.ts"></script>
   <script>
-    // 컨트롤 연결
-    document.getElementById('theme-select').addEventListener('change', (e) => {
-      document.getElementById('chatbot').setAttribute('theme', e.target.value);
+    // ── 요소 참조 ──
+    const chatbot = document.getElementById('chatbot');
+    const themeSelect = document.getElementById('theme-select');
+    const apiUrlInput = document.getElementById('api-url');
+    const tokenInput = document.getElementById('token');
+    const authArea = document.getElementById('auth-area');
+    const btnLogin = document.getElementById('btn-login');
+    const statusDot = document.getElementById('status-dot');
+    const statusText = document.getElementById('status-text');
+
+    // 모달 요소
+    const loginModal = document.getElementById('login-modal');
+    const modalClose = document.getElementById('modal-close');
+    const loginEmail = document.getElementById('login-email');
+    const loginPassword = document.getElementById('login-password');
+    const modalLoginBtn = document.getElementById('modal-login-btn');
+    const modalError = document.getElementById('modal-error');
+
+    // ── 컨트롤 연결 ──
+    themeSelect.addEventListener('change', (e) => {
+      chatbot.setAttribute('theme', e.target.value);
     });
-    document.getElementById('api-url').addEventListener('change', (e) => {
-      document.getElementById('chatbot').setAttribute('api-url', e.target.value);
+    apiUrlInput.addEventListener('change', (e) => {
+      chatbot.setAttribute('api-url', e.target.value);
+      checkServerStatus();
     });
-    document.getElementById('token').addEventListener('change', (e) => {
-      document.getElementById('chatbot').setAttribute('token', e.target.value);
+    tokenInput.addEventListener('change', (e) => {
+      chatbot.setAttribute('token', e.target.value);
     });
+
+    // ── 서버 상태 확인 ──
+    async function checkServerStatus() {
+      const apiUrl = apiUrlInput.value.replace(/\/+$/, '');
+      try {
+        const res = await fetch(`${apiUrl}/api/auth/userinfo`, {
+          method: 'GET',
+          signal: AbortSignal.timeout(3000)
+        });
+        if (res.ok || res.status === 401 || res.status === 403) {
+          // 서버가 응답하면 연결됨 (인증 실패도 서버는 동작 중)
+          statusDot.classList.add('connected');
+          statusText.textContent = '연결됨';
+        } else {
+          statusDot.classList.remove('connected');
+          statusText.textContent = '연결 안됨';
+        }
+      } catch {
+        statusDot.classList.remove('connected');
+        statusText.textContent = '연결 안됨';
+      }
+    }
+
+    // 페이지 로드 시 상태 확인
+    checkServerStatus();
+
+    // ── 로그인 모달 ──
+    function openModal() {
+      loginModal.classList.add('active');
+      modalError.classList.remove('show');
+      loginEmail.value = '';
+      loginPassword.value = '';
+      loginEmail.focus();
+    }
+
+    function closeModal() {
+      loginModal.classList.remove('active');
+      modalError.classList.remove('show');
+    }
+
+    btnLogin.addEventListener('click', openModal);
+    modalClose.addEventListener('click', closeModal);
+
+    // 배경 클릭으로 닫기
+    loginModal.addEventListener('click', (e) => {
+      if (e.target === loginModal) closeModal();
+    });
+
+    // ESC 키로 닫기
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && loginModal.classList.contains('active')) {
+        closeModal();
+      }
+    });
+
+    // Enter 키로 로그인
+    loginPassword.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') doLogin();
+    });
+    loginEmail.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') loginPassword.focus();
+    });
+
+    // ── 로그인 API 호출 ──
+    async function doLogin() {
+      const email = loginEmail.value.trim();
+      const password = loginPassword.value;
+      if (!email || !password) {
+        modalError.textContent = '이메일과 비밀번호를 입력하세요';
+        modalError.classList.add('show');
+        return;
+      }
+
+      modalLoginBtn.disabled = true;
+      modalLoginBtn.textContent = '로그인 중...';
+      modalError.classList.remove('show');
+
+      const apiUrl = apiUrlInput.value.replace(/\/+$/, '');
+      try {
+        const response = await fetch(`${apiUrl}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        if (!response.ok) {
+          throw new Error('login failed');
+        }
+
+        const data = await response.json();
+        const accessToken = data.access_token;
+
+        // 1. 모달 닫기
+        closeModal();
+
+        // 2. Token input에 세팅
+        tokenInput.value = accessToken;
+
+        // 3. chatbot에 token 전달
+        chatbot.setAttribute('token', accessToken);
+
+        // 4. 버튼 영역을 사용자 정보로 전환
+        showLoggedIn(email);
+
+        // 5. 샘플 링크에 토큰 쿼리 파라미터 추가
+        updateSampleLinks(accessToken);
+
+        // 6. 서버 상태 업데이트
+        statusDot.classList.add('connected');
+        statusText.textContent = '연결됨';
+
+      } catch {
+        modalError.textContent = '로그인 실패: 이메일 또는 비밀번호를 확인하세요';
+        modalError.classList.add('show');
+      } finally {
+        modalLoginBtn.disabled = false;
+        modalLoginBtn.textContent = '로그인';
+      }
+    }
+
+    modalLoginBtn.addEventListener('click', doLogin);
+
+    // ── 샘플 링크에 토큰 쿼리 파라미터 추가/제거 ──
+    function updateSampleLinks(token) {
+      document.querySelectorAll('.sample-card').forEach(a => {
+        const url = new URL(a.href);
+        if (token) {
+          url.searchParams.set('token', token);
+        } else {
+          url.searchParams.delete('token');
+        }
+        a.href = url.toString();
+      });
+    }
+
+    // ── 로그인/로그아웃 UI 전환 ──
+    function showLoggedIn(email) {
+      authArea.innerHTML = `
+        <span class="auth-user-info">
+          <span class="user-dot"></span>
+          ${email}
+        </span>
+        <button class="btn-logout" id="btn-logout-action" type="button">로그아웃</button>
+      `;
+      document.getElementById('btn-logout-action').addEventListener('click', doLogout);
+    }
+
+    function doLogout() {
+      // Token 초기화
+      tokenInput.value = '';
+      chatbot.removeAttribute('token');
+
+      // 샘플 링크에서 토큰 쿼리 파라미터 제거
+      updateSampleLinks('');
+
+      // 로그인 버튼 복원
+      authArea.innerHTML = `
+        <button class="btn-login" id="btn-login" type="button">&#128274; 로그인</button>
+      `;
+      document.getElementById('btn-login').addEventListener('click', openModal);
+
+      // 서버 상태 재확인
+      checkServerStatus();
+    }
   </script>
 </body>
 </html>

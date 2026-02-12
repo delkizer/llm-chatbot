@@ -283,15 +283,15 @@ cmd_clean() {
 }
 
 # ============================================================
-# serve — 게이트웨이 서버 실행 (단일 포트 8280)
+# serve — 게이트웨이 서버 실행 (단일 포트 5174)
 # ============================================================
 
 cmd_serve() {
-  header "게이트웨이 서버 실행 (포트 8280)"
+  header "게이트웨이 서버 실행 (포트 5174)"
 
-  info "http://localhost:8280/ 에서 전체 샘플 접근 가능"
+  info "http://localhost:5174/ 에서 전체 샘플 접근 가능"
   echo ""
-  (cd "$SCRIPT_DIR" && uvicorn gateway:app --port 8280 --reload)
+  (cd "$SCRIPT_DIR" && uvicorn gateway:app --port 5174 --reload)
 }
 
 # ============================================================
@@ -361,7 +361,7 @@ cmd_usage() {
   echo "  ./manage.sh dev [샘플명]     특정 샘플 개발 서버 실행 (포그라운드)"
   echo "  ./manage.sh build            빌드 가능한 샘플 빌드"
   echo "  ./manage.sh build-all        embed.js + 전체 샘플 빌드"
-  echo "  ./manage.sh serve            게이트웨이 서버 실행 (포트 8280, 단일 포트)"
+  echo "  ./manage.sh serve            게이트웨이 서버 실행 (포트 5174, 단일 포트)"
   echo "  ./manage.sh clean            node_modules, dist, __pycache__ 등 제거"
   echo "  ./manage.sh stop             백그라운드 개발 서버 종료"
   echo ""
@@ -370,7 +370,7 @@ cmd_usage() {
   echo "  nextjs (5174), angular (5175), htmx (5176), iframe (5177)"
   echo ""
   echo "게이트웨이 (단일 포트):"
-  echo "  http://localhost:8280/  — 전체 샘플 통합 서빙"
+  echo "  http://localhost:5174/  — 전체 샘플 통합 서빙"
   echo ""
 }
 

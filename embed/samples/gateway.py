@@ -1,19 +1,20 @@
 """
 spo-chatbot 프레임워크 검증 샘플 게이트웨이
 
-8종 프레임워크 샘플을 단일 포트(8280)에서 URI 기반으로 서빙한다.
+8종 프레임워크 샘플을 단일 포트(5174)에서 URI 기반으로 서빙한다.
 
 실행:
     cd embed/samples
-    uvicorn gateway:app --port 8280 --reload
+    uvicorn gateway:app --port 5174 --reload
 """
 
 from pathlib import Path
 
 from fastapi import FastAPI, Request
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from starlette.middleware.base import BaseHTTPMiddleware
 
 # ============================================================
 # 경로 설정
@@ -30,10 +31,47 @@ HTMX_TEMPLATES_DIR = BASE_DIR / "htmx" / "templates"
 GATEWAY_TEMPLATES_DIR = BASE_DIR / "templates"
 
 # ============================================================
+# 토큰 주입 미들웨어 (서버 사이드 HTML 치환)
+# ============================================================
+
+DEV_TEST_TOKEN = "dev-test-token"
+
+
+class TokenInjectionMiddleware(BaseHTTPMiddleware):
+    """HTML 내 dev-test-token을 실제 토큰으로 서버 사이드 치환한다."""
+
+    async def dispatch(self, request, call_next):
+        # 요청에서 토큰 추출: ?token= 쿼리 > access_token 쿠키
+        token = request.query_params.get("token") or request.cookies.get("access_token")
+
+        response = await call_next(request)
+        content_type = response.headers.get("content-type", "")
+
+        if token and token != DEV_TEST_TOKEN and "text/html" in content_type:
+            body = b""
+            async for chunk in response.body_iterator:
+                body += chunk
+            html = body.decode("utf-8")
+            html = html.replace(DEV_TEST_TOKEN, token)
+            headers = {
+                k: v for k, v in response.headers.items()
+                if k.lower() not in ("content-length", "content-type")
+            }
+            return Response(
+                content=html,
+                status_code=response.status_code,
+                headers=headers,
+                media_type="text/html",
+            )
+        return response
+
+
+# ============================================================
 # FastAPI 앱 생성
 # ============================================================
 
 app = FastAPI(title="spo-chatbot Sample Gateway")
+app.add_middleware(TokenInjectionMiddleware)
 
 # 템플릿 엔진
 gateway_templates = Jinja2Templates(directory=str(GATEWAY_TEMPLATES_DIR))

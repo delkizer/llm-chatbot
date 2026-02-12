@@ -15,7 +15,7 @@ npm run build
 
 ## 게이트웨이 서버 (추천)
 
-단일 포트(8280)에서 전체 샘플을 URI 경로로 접근할 수 있다.
+단일 포트(5174)에서 전체 샘플을 URI 경로로 접근할 수 있다.
 
 ```bash
 cd embed/samples
@@ -23,22 +23,22 @@ cd embed/samples
 # 전체 샘플 빌드 (최초 1회)
 ./manage.sh build-all
 
-# 게이트웨이 서버 실행
+# 게이트웨이 서버 실행 (포트 5174)
 ./manage.sh serve
-# 또는: uvicorn gateway:app --port 8280 --reload
+# 또는: uvicorn gateway:app --port 5174 --reload
 ```
 
 | URL | 샘플 |
 |-----|------|
-| `http://localhost:8280/` | 랜딩 페이지 (샘플 목록) |
-| `http://localhost:8280/sample/vanilla/` | Vanilla HTML |
-| `http://localhost:8280/sample/vue3/` | Vue 3 |
-| `http://localhost:8280/sample/react/` | React |
-| `http://localhost:8280/sample/svelte/` | Svelte |
-| `http://localhost:8280/sample/nextjs/` | Next.js |
-| `http://localhost:8280/sample/angular/` | Angular |
-| `http://localhost:8280/sample/htmx/` | HTMX |
-| `http://localhost:8280/sample/iframe/` | iframe |
+| `http://localhost:5174/` | 랜딩 페이지 (샘플 목록) |
+| `http://localhost:5174/sample/vanilla/` | Vanilla HTML |
+| `http://localhost:5174/sample/vue3/` | Vue 3 |
+| `http://localhost:5174/sample/react/` | React |
+| `http://localhost:5174/sample/svelte/` | Svelte |
+| `http://localhost:5174/sample/nextjs/` | Next.js |
+| `http://localhost:5174/sample/angular/` | Angular |
+| `http://localhost:5174/sample/htmx/` | HTMX |
+| `http://localhost:5174/sample/iframe/` | iframe |
 
 > 게이트웨이는 FastAPI 기반이며, 각 프레임워크의 빌드 결과물을 정적 파일로 서빙한다.
 > HTMX 샘플만 Jinja2 서버 사이드 렌더링으로 처리된다.
@@ -61,7 +61,7 @@ HMR이 필요한 개발 시에는 각 샘플을 개별 포트로 실행할 수 �
 ## manage.sh 사용법
 
 ```bash
-# 게이트웨이 서버 실행 (포트 8280)
+# 게이트웨이 서버 실행 (포트 5174)
 ./manage.sh serve
 
 # embed.js + 전체 샘플 빌드
