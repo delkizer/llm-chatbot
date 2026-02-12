@@ -1,0 +1,16 @@
+/* BWF Theme */
+:host {
+  --spo-primary: #00529b;
+  --spo-bg: #ffffff;
+  --spo-text: #1a1a1a;
+  --spo-border: #d1d5db;
+  --spo-user-bg: #cce0f5;
+  --spo-assistant-bg: #f0f0f0;
+  --spo-font-family: 'Helvetica Neue', Arial, sans-serif;
+  --spo-font-size: 14px;
+  --spo-chart-color-1: #00529b;
+  --spo-chart-color-2: #e4002b;
+  --spo-chart-color-3: #00a651;
+  --spo-chart-color-4: #ffc72c;
+  --spo-chart-color-5: #7b2d8e;
+}

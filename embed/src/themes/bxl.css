@@ -1,0 +1,16 @@
+/* BXL Theme */
+:host {
+  --spo-primary: #1a1a2e;
+  --spo-bg: #ffffff;
+  --spo-text: #16213e;
+  --spo-border: #d4d4d8;
+  --spo-user-bg: #e0e7ff;
+  --spo-assistant-bg: #f4f4f5;
+  --spo-font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+  --spo-font-size: 14px;
+  --spo-chart-color-1: #1a1a2e;
+  --spo-chart-color-2: #e94560;
+  --spo-chart-color-3: #0f3460;
+  --spo-chart-color-4: #533483;
+  --spo-chart-color-5: #16213e;
+}

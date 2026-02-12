@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SPO Chatbot - Dev</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f3f4f6;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #1f2937;
+      font-size: 24px;
+    }
+    .demo-container {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .demo-card {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .demo-card h2 {
+      font-size: 16px;
+      margin-bottom: 12px;
+      color: #374151;
+    }
+    spo-chatbot {
+      display: block;
+      width: 400px;
+      height: 600px;
+    }
+    .controls {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .controls label {
+      margin-right: 16px;
+      font-size: 14px;
+      color: #4b5563;
+    }
+    .controls select, .controls input {
+      padding: 4px 8px;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>SPO Chatbot Embed - Development</h1>
+
+  <div class="controls">
+    <label>
+      Theme:
+      <select id="theme-select">
+        <option value="default">Default</option>
+        <option value="bwf" selected>BWF</option>
+        <option value="bxl">BXL</option>
+      </select>
+    </label>
+    <label>
+      API URL:
+      <input id="api-url" type="text" value="http://localhost:4502" size="30">
+    </label>
+    <label>
+      Token:
+      <input id="token" type="text" value="dev-test-token" size="20">
+    </label>
+  </div>
+
+  <div class="demo-container">
+    <div class="demo-card">
+      <h2>BWF Badminton</h2>
+      <spo-chatbot
+        id="chatbot"
+        api-url="http://localhost:4502"
+        token="dev-test-token"
+        theme="bwf"
+        context-type="badminton"
+        match-id="test-match-001"
+        player-id="test-player-001">
+      </spo-chatbot>
+    </div>
+  </div>
+
+  <script type="module" src="/src/spo-chatbot.ts"></script>
+  <script>
+    // 컨트롤 연결
+    document.getElementById('theme-select').addEventListener('change', (e) => {
+      document.getElementById('chatbot').setAttribute('theme', e.target.value);
+    });
+    document.getElementById('api-url').addEventListener('change', (e) => {
+      document.getElementById('chatbot').setAttribute('api-url', e.target.value);
+    });
+    document.getElementById('token').addEventListener('change', (e) => {
+      document.getElementById('chatbot').setAttribute('token', e.target.value);
+    });
+  </script>
+</body>
+</html>
