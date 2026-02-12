@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>spo-chatbot Framework Samples</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      min-height: 100vh;
+      padding: 40px 24px;
+    }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    header h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #16213e;
+    }
+    header p {
+      font-size: 1rem;
+      color: #666;
+      line-height: 1.5;
+    }
+    .info-bar {
+      background: #e8f4fd;
+      border: 1px solid #b8daf0;
+      border-radius: 8px;
+      padding: 12px 20px;
+      margin-bottom: 32px;
+      font-size: 0.85rem;
+      color: #1a5276;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .info-bar code {
+      background: #d4e8f5;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 0.82rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      transition: box-shadow 0.2s, transform 0.2s;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+    }
+    .card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+      transform: translateY(-2px);
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    .card-desc {
+      font-size: 0.85rem;
+      color: #666;
+      line-height: 1.5;
+      flex-grow: 1;
+    }
+    .card-tag {
+      margin-top: 12px;
+      font-size: 0.75rem;
+      color: #999;
+      padding-top: 10px;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    /* 프레임워크별 아이콘 배경색 */
+    .bg-vanilla   { background: #f59e0b; }
+    .bg-vue       { background: #42b883; }
+    .bg-react     { background: #61dafb; color: #1a1a2e; }
+    .bg-svelte    { background: #ff3e00; }
+    .bg-nextjs    { background: #000000; }
+    .bg-angular   { background: #dd0031; }
+    .bg-htmx      { background: #3366cc; }
+    .bg-iframe    { background: #8b5cf6; }
+
+    footer {
+      text-align: center;
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid #e0e0e0;
+      font-size: 0.82rem;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>spo-chatbot Framework Samples</h1>
+      <p>Web Component(&lt;spo-chatbot&gt;)가 다양한 프레임워크에서 동작함을 검증하는 샘플 모음</p>
+    </header>
+
+    <div class="info-bar">
+      <span>embed.js 빌드:</span>
+      <code>cd embed && npm run build</code>
+      <span>|</span>
+      <span>게이트웨이 실행:</span>
+      <code>cd embed/samples && uvicorn gateway:app --port 8280 --reload</code>
+    </div>
+
+    <div class="grid">
+      <a class="card" href="/sample/vanilla/">
+        <div class="card-header">
+          <div class="card-icon bg-vanilla">V</div>
+          <div class="card-title">Vanilla HTML</div>
+        </div>
+        <div class="card-desc">
+          프레임워크 없이 순수 HTML/JS만으로 Web Component를 사용하는 최소 구성 예제
+        </div>
+        <div class="card-tag">정적 HTML | script 태그 직접 로드</div>
+      </a>
+
+      <a class="card" href="/sample/vue3/">
+        <div class="card-header">
+          <div class="card-icon bg-vue">V</div>
+          <div class="card-title">Vue 3</div>
+        </div>
+        <div class="card-desc">
+          Vue 3 Composition API 환경에서 isCustomElement 설정으로 Web Component 공존 검증
+        </div>
+        <div class="card-tag">Vite 빌드 | compilerOptions.isCustomElement</div>
+      </a>
+
+      <a class="card" href="/sample/react/">
+        <div class="card-header">
+          <div class="card-icon bg-react">R</div>
+          <div class="card-title">React</div>
+        </div>
+        <div class="card-desc">
+          React 환경에서 ref 기반 속성 바인딩으로 Web Component 동적 제어 검증
+        </div>
+        <div class="card-tag">Vite 빌드 | useRef + setAttribute</div>
+      </a>
+
+      <a class="card" href="/sample/svelte/">
+        <div class="card-header">
+          <div class="card-icon bg-svelte">S</div>
+          <div class="card-title">Svelte</div>
+        </div>
+        <div class="card-desc">
+          Svelte의 네이티브 커스텀 엘리먼트 지원으로 가장 자연스러운 통합 확인
+        </div>
+        <div class="card-tag">Vite 빌드 | 네이티브 바인딩</div>
+      </a>
+
+      <a class="card" href="/sample/nextjs/">
+        <div class="card-header">
+          <div class="card-icon bg-nextjs">N</div>
+          <div class="card-title">Next.js</div>
+        </div>
+        <div class="card-desc">
+          SSR 환경에서 dynamic import + ssr:false로 CSR 전용 로딩하여 hydration 문제 우회
+        </div>
+        <div class="card-tag">정적 내보내기 (output: export) | dynamic import</div>
+      </a>
+
+      <a class="card" href="/sample/angular/">
+        <div class="card-header">
+          <div class="card-icon bg-angular">A</div>
+          <div class="card-title">Angular</div>
+        </div>
+        <div class="card-desc">
+          Angular CUSTOM_ELEMENTS_SCHEMA로 커스텀 엘리먼트 인식 및 양방향 바인딩 검증
+        </div>
+        <div class="card-tag">Angular CLI 빌드 | CUSTOM_ELEMENTS_SCHEMA</div>
+      </a>
+
+      <a class="card" href="/sample/htmx/">
+        <div class="card-header">
+          <div class="card-icon bg-htmx">H</div>
+          <div class="card-title">HTMX</div>
+        </div>
+        <div class="card-desc">
+          HTMX와 Web Component의 공존 확인. Jinja2 서버 사이드 렌더링으로 토큰/설정 주입
+        </div>
+        <div class="card-tag">Jinja2 SSR | HTMX 이벤트 비간섭 확인</div>
+      </a>
+
+      <a class="card" href="/sample/iframe/">
+        <div class="card-header">
+          <div class="card-icon bg-iframe">I</div>
+          <div class="card-title">iframe</div>
+        </div>
+        <div class="card-desc">
+          iframe 격리 환경에서 postMessage 기반 호스트-챗봇 통신 패턴 검증
+        </div>
+        <div class="card-tag">정적 HTML | postMessage 통신</div>
+      </a>
+    </div>
+
+    <footer>
+      spo-chatbot embed | Gateway: localhost:8280
+    </footer>
+  </div>
+</body>
+</html>

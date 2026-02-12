@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="../../dist/embed.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    spo-chatbot {
+      display: block;
+      width: 100%;
+      height: 100vh;
+    }
+  </style>
+</head>
+<body>
+  <spo-chatbot
+    id="chatbot"
+    api-url="http://localhost:4502">
+  </spo-chatbot>
+
+  <script>
+    /**
+     * 호스트 페이지(host.html)에서 postMessage로 전달된 설정을 수신하여
+     * <spo-chatbot> 요소의 속성을 동적으로 설정한다.
+     *
+     * 메시지 형식:
+     *   {
+     *     type: 'spo-chatbot-init',
+     *     token: string,
+     *     theme: string,
+     *     contextType: string,
+     *     matchId?: string
+     *   }
+     *
+     * 운영 환경에서는 event.origin 검증 필수.
+     */
+    window.addEventListener('message', (event) => {
+      if (event.data.type !== 'spo-chatbot-init') {
+        return;
+      }
+
+      const chatbot = document.getElementById('chatbot');
+
+      if (event.data.token) {
+        chatbot.setAttribute('token', event.data.token);
+      }
+      if (event.data.theme) {
+        chatbot.setAttribute('theme', event.data.theme);
+      }
+      if (event.data.contextType) {
+        chatbot.setAttribute('context-type', event.data.contextType);
+      }
+      if (event.data.matchId) {
+        chatbot.setAttribute('match-id', event.data.matchId);
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "spo-chatbot-sample-vue3",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vue": "^3.4.0",
+    "@vitejs/plugin-vue": "^5.0.0",
+    "vite": "^5.4.0",
+    "typescript": "^5.4.0"
+  }
+}

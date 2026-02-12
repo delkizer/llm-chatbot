@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>iframe Host - spo-chatbot Sample</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px;
+      min-height: 100vh;
+    }
+    h1 {
+      font-size: 1.4rem;
+      margin-bottom: 16px;
+    }
+    .controls {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 20px;
+      padding: 16px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .controls label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    .controls input,
+    .controls select {
+      padding: 6px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+    .controls input {
+      width: 180px;
+    }
+    #chatbot-frame {
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+  <!--
+    실행 방법 (포트 5177):
+      npx serve -l 5177
+      또는
+      python3 -m http.server 5177
+  -->
+
+  <h1>iframe Host - spo-chatbot Sample</h1>
+
+  <div class="controls">
+    <label>Token:
+      <input id="token" type="text" value="dev-test-token" placeholder="JWT token">
+    </label>
+    <label>Theme:
+      <select id="theme">
+        <option value="default">Default</option>
+        <option value="bwf" selected>BWF</option>
+        <option value="bxl">BXL</option>
+      </select>
+    </label>
+  </div>
+
+  <iframe
+    id="chatbot-frame"
+    src="chatbot.html"
+    width="420"
+    height="640"
+    sandbox="allow-scripts allow-same-origin">
+  </iframe>
+
+  <script>
+    const frame = document.getElementById('chatbot-frame');
+    const tokenInput = document.getElementById('token');
+    const themeSelect = document.getElementById('theme');
+
+    /**
+     * iframe 내부 chatbot.html에 postMessage로 설정값 전달
+     * - event.data.type === 'spo-chatbot-init' 으로 필터링
+     * - 운영 환경에서는 두 번째 인자에 origin을 명시할 것
+     */
+    function sendConfig() {
+      frame.contentWindow.postMessage({
+        type: 'spo-chatbot-init',
+        token: tokenInput.value,
+        theme: themeSelect.value,
+        contextType: 'badminton',
+        matchId: 'test-match-001'
+      }, '*');
+    }
+
+    // iframe 로드 완료 시 초기 설정 전송
+    frame.addEventListener('load', () => {
+      sendConfig();
+    });
+
+    // 컨트롤 변경 시 재전송
+    tokenInput.addEventListener('input', () => {
+      sendConfig();
+    });
+
+    themeSelect.addEventListener('change', () => {
+      sendConfig();
+    });
+  </script>
+</body>
+</html>
