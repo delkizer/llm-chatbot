@@ -118,7 +118,7 @@ def create_app() -> FastAPI:
 | 항목 | 기술 |
 |------|------|
 | LLM Server | Ollama |
-| Model | DeepSeek (또는 동급 오픈소스) |
+| Model | Qwen 2.5 (7B, Q4_K_M) |
 | 호출 방식 | HTTP API (스트리밍 지원) |
 
 ### Web Component (embed)
@@ -159,7 +159,7 @@ BWF, BXL 등 여러 프로젝트에 동일하게 적용 가능한 구조
 ### 2. 컨텍스트 관리: 세션 기반
 
 - Redis 기반 세션 상태 관리
-- 세션 키: `session:{user_id}:{context_type}`
+- 세션 키: `chatbot:session:{user_id}:{context_type}`
 - 저장: 현재 경기 ID, 선수 ID, 대화 히스토리
 
 ### 3. 데이터 소스: Open API
@@ -364,21 +364,26 @@ llm-chatbot/
 ```bash
 # LLM
 OLLAMA_HOST=http://localhost:11434
-OLLAMA_MODEL=deepseek-coder:6.7b
+OLLAMA_MODEL=qwen2.5:7b
 
 # Database (기존 BWF/BXL DB)
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=spotv
-DB_USER=postgres
-DB_PASSWORD=
+POSTGRESSQL_HOST=localhost
+POSTGRESSQL_PORT=5432
+DB_NAME_SPOTV=spotv
+POSTGRESSQL_USER=postgres
+POSTGRESSQL_PASSWORD=
 
-# Redis
-REDIS_URL=redis://localhost:6379
+# Redis (Sentinel)
+REDIS_SENTINEL_NODES=localhost:26379
+REDIS_SENTINEL_MASTER=mymaster
+REDIS_PASSWORD=
+REDIS_DB=1
 
 # Auth (BWF/BXL과 동일)
-JWT_SECRET=
+JWT_SECRET_KEY=
 JWT_ALGORITHM=HS256
+BTN_AUTH_URL=
+BTN_INTERNAL_API_KEY=
 
 # Session
 SESSION_TTL=1800

@@ -80,7 +80,7 @@ class Auth:
         }
 
         # 간단한 시크릿 키 사용 (운영 환경에서는 RSA 키 사용 권장)
-        secret_key = self.config.btn_internal_api_key or "llm-chatbot-secret-key"
+        secret_key = self.config.jwt_secret_key or "llm-chatbot-secret-key"
         token = jwt.encode(payload, secret_key, algorithm=self.JWT_ALGORITHM)
         return token
 
@@ -94,14 +94,14 @@ class Auth:
             "iat": datetime.now(timezone.utc)
         }
 
-        secret_key = self.config.btn_internal_api_key or "llm-chatbot-secret-key"
+        secret_key = self.config.jwt_secret_key or "llm-chatbot-secret-key"
         token = jwt.encode(payload, secret_key, algorithm=self.JWT_ALGORITHM)
         return token
 
     def verify_token(self, token: str) -> dict:
         """JWT Token 검증"""
         try:
-            secret_key = self.config.btn_internal_api_key or "llm-chatbot-secret-key"
+            secret_key = self.config.jwt_secret_key or "llm-chatbot-secret-key"
             payload = jwt.decode(token, secret_key, algorithms=[self.JWT_ALGORITHM])
             return payload
         except JWTError as e:

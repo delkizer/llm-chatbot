@@ -4,6 +4,7 @@ Chatbot Router
 채팅 API 엔드포인트
 """
 
+import json
 from typing import Optional
 from fastapi import APIRouter, Path, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
@@ -26,6 +27,13 @@ config = Config()
 # Request/Response Models
 # =============================================================================
 
+class CreateSessionRequest(BaseModel):
+    """세션 생성 요청"""
+    context_type: str = Field(default="badminton", description="컨텍스트 유형 (badminton, baseball 등)")
+    skill_name: Optional[str] = Field(default=None, description="스킬 이름 (기본: context_type)")
+    context: Optional[dict] = Field(default=None, description="추가 컨텍스트 (match_id, player_id 등)")
+
+
 class ChatRequest(BaseModel):
     """채팅 요청"""
     message: str = Field(..., description="사용자 메시지", min_length=1, max_length=4000)
@@ -38,7 +46,8 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     """채팅 응답"""
-    content: str = Field(..., description="AI 응답 텍스트")
+    text: str = Field(..., description="AI 응답 텍스트 (차트 JSON 제거됨)")
+    charts: Optional[list[dict]] = Field(default=None, description="Chart.js 호환 차트 데이터")
     session_id: str = Field(..., description="세션 ID")
     model: str = Field(..., description="사용된 모델")
     response_time_ms: float = Field(..., description="응답 시간 (ms)")
@@ -104,6 +113,28 @@ async def health_check(
     )
 
 
+@router.post("/session", tags=["Session"], response_model=SessionInfoResponse)
+async def create_session(
+    request: CreateSessionRequest,
+    user_id: str = Depends(get_user_id),
+    service: ChatService = Depends(get_chat_service)
+):
+    """
+    새 세션 생성
+
+    - 인증된 사용자만 사용 가능
+    - 채팅 전 세션을 먼저 생성해야 함
+    """
+    info = service.create_session(
+        user_id=user_id,
+        context_type=request.context_type,
+        skill_name=request.skill_name,
+        context=request.context
+    )
+
+    return SessionInfoResponse(**info)
+
+
 @router.post("/", tags=["Chat"], response_model=ChatResponse)
 async def chat(
     request: ChatRequest,
@@ -129,7 +160,8 @@ async def chat(
         )
 
         return ChatResponse(
-            content=result.content,
+            text=result.text,
+            charts=result.charts if result.charts else None,
             session_id=result.session_id,
             model=result.model,
             response_time_ms=result.response_time_ms,
@@ -160,6 +192,7 @@ async def chat_stream(
     """
     async def event_generator():
         try:
+            full_response = ""
             async for chunk in service.chat_stream(
                 user_id=user_id,
                 message=request.message,
@@ -169,7 +202,14 @@ async def chat_stream(
                 temperature=request.temperature,
                 max_tokens=request.max_tokens
             ):
+                full_response += chunk
                 yield {"event": "message", "data": chunk}
+
+            # 스트림 완료 후 차트 파싱
+            parsed = service.formatter.parse(full_response)
+            if parsed.has_charts:
+                for chart in parsed.charts:
+                    yield {"event": "chart", "data": json.dumps(chart, ensure_ascii=False)}
 
             # 스트림 종료 이벤트
             yield {"event": "done", "data": "[DONE]"}

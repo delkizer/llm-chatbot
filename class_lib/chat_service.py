@@ -12,15 +12,20 @@ from pathlib import Path
 from typing import Optional, AsyncGenerator
 from dataclasses import dataclass
 
+from fastapi import HTTPException
+
 from class_config.class_env import Config
 from class_lib.ollama_client import OllamaClient, ChatResponse
 from class_lib.session_client import SessionClient, ChatSession
+from class_lib.response_formatter import ResponseFormatter
+from class_lib.data_layer import DataLayer, FormattedContext
 
 
 @dataclass
 class ChatResult:
     """채팅 결과"""
-    content: str
+    text: str
+    charts: list[dict]
     session_id: str
     model: str
     response_time_ms: float
@@ -30,7 +35,8 @@ class ChatResult:
 
     def to_dict(self) -> dict:
         return {
-            "content": self.content,
+            "text": self.text,
+            "charts": self.charts,
             "session_id": self.session_id,
             "model": self.model,
             "response_time_ms": self.response_time_ms,
@@ -169,6 +175,12 @@ class ChatService:
         self.ollama = OllamaClient(logger)
         self.session = SessionClient(logger)
         self.skill_loader = SkillLoader(logger, skills_dir)
+        self.formatter = ResponseFormatter(logger)
+
+        # Data Layer (feature flag 기반)
+        self._data_layer = None
+        if self.config.enable_data_layer:
+            self._data_layer = DataLayer(logger)
 
         # 설정
         self.max_history_messages = 10  # 대화 히스토리 최대 메시지 수
@@ -231,13 +243,10 @@ class ChatService:
         # 스킬 이름 결정
         skill = skill_name or context_type
 
-        # 세션 조회/생성
-        session = self.session.get_or_create_session(
-            user_id=user_id,
-            context_type=context_type,
-            skill_name=skill,
-            context=context
-        )
+        # 세션 조회
+        session = self.session.get_session(user_id, context_type)
+        if not session:
+            raise HTTPException(status_code=410, detail="Session expired. Please start a new session.")
         self.logger.info(f"[Chat] Session: {session.session_id}, history={len(session.messages)}")
 
         # SKILL 로드
@@ -245,6 +254,11 @@ class ChatService:
         if not system_prompt:
             self.logger.warning(f"[Chat] No skill found for: {skill}, using base")
             system_prompt = self.skill_loader.load("_base")
+
+        # 데이터 컨텍스트 수집
+        if self._data_layer:
+            data_context = await self._load_data_context(session, context_type)
+            system_prompt = self._build_system_prompt(system_prompt, data_context)
 
         # 사용자 메시지 추가
         session.add_message("user", message)
@@ -261,13 +275,17 @@ class ChatService:
             max_tokens=max_tokens
         )
 
-        # 응답 저장
+        # 응답 파싱
+        parsed = self.formatter.parse(response.content)
+
+        # 세션에는 원문 저장 (차트 JSON 포함)
         session.add_message("assistant", response.content)
         self.session.save_session(session)
 
         # 결과 생성
         result = ChatResult(
-            content=response.content,
+            text=parsed.text,
+            charts=parsed.charts,
             session_id=session.session_id,
             model=response.model,
             response_time_ms=response.response_time_ms,
@@ -283,7 +301,8 @@ class ChatService:
         self.logger.info(
             f"[Chat] DONE: {len(response.content)} chars, "
             f"{response.total_tokens} tokens, "
-            f"{response.response_time_ms:.1f}ms"
+            f"{response.response_time_ms:.1f}ms, "
+            f"{len(parsed.charts)} charts"
         )
         self.logger.info("=" * 60)
 
@@ -315,18 +334,20 @@ class ChatService:
         # 스킬 이름 결정
         skill = skill_name or context_type
 
-        # 세션 조회/생성
-        session = self.session.get_or_create_session(
-            user_id=user_id,
-            context_type=context_type,
-            skill_name=skill,
-            context=context
-        )
+        # 세션 조회
+        session = self.session.get_session(user_id, context_type)
+        if not session:
+            raise HTTPException(status_code=410, detail="Session expired. Please start a new session.")
 
         # SKILL 로드
         system_prompt = self.skill_loader.load(skill)
         if not system_prompt:
             system_prompt = self.skill_loader.load("_base")
+
+        # 데이터 컨텍스트 수집
+        if self._data_layer:
+            data_context = await self._load_data_context(session, context_type)
+            system_prompt = self._build_system_prompt(system_prompt, data_context)
 
         # 사용자 메시지 추가
         session.add_message("user", message)
@@ -350,7 +371,12 @@ class ChatService:
         session.add_message("assistant", full_response)
         self.session.save_session(session)
 
-        self.logger.info(f"[ChatStream] DONE: {len(full_response)} chars")
+        # 파싱 결과 로그 (차트 정보)
+        parsed = self.formatter.parse(full_response)
+        self.logger.info(
+            f"[ChatStream] DONE: {len(full_response)} chars, "
+            f"{len(parsed.charts)} charts"
+        )
         self.logger.info("=" * 60)
 
     def clear_history(self, user_id: str, context_type: str) -> bool:
@@ -363,6 +389,45 @@ class ChatService:
         self.logger.info(f"[Chat] Delete session: {user_id}:{context_type}")
         return self.session.delete_session(user_id, context_type)
 
+    def create_session(
+        self,
+        user_id: str,
+        context_type: str = "badminton",
+        skill_name: str = None,
+        context: dict = None
+    ) -> dict:
+        """
+        새 세션 생성
+
+        Args:
+            user_id: 사용자 ID
+            context_type: 컨텍스트 유형
+            skill_name: 스킬 이름 (기본: context_type)
+            context: 추가 컨텍스트
+
+        Returns:
+            dict: 세션 정보
+        """
+        skill = skill_name or context_type
+        session = self.session.create_session(
+            user_id=user_id,
+            context_type=context_type,
+            skill_name=skill,
+            context=context
+        )
+        self.logger.info(f"[Chat] Session created: {session.session_id}")
+
+        return {
+            "session_id": session.session_id,
+            "user_id": session.user_id,
+            "context_type": session.context_type,
+            "skill_name": session.skill_name,
+            "message_count": len(session.messages),
+            "context": session.context,
+            "created_at": session.created_at,
+            "updated_at": session.updated_at
+        }
+
     def get_session_info(self, user_id: str, context_type: str) -> Optional[dict]:
         """세션 정보 조회"""
         return self.session.get_session_info(user_id, context_type)
@@ -371,3 +436,46 @@ class ChatService:
         """SKILL 캐시 새로고침"""
         self.skill_loader.clear_cache(skill_name)
         self.logger.info(f"[Chat] Skill reloaded: {skill_name or 'all'}")
+
+    async def _load_data_context(self, session, context_type: str) -> str:
+        """세션 컨텍스트에서 데이터 수집"""
+        if not self._data_layer:
+            return ""
+
+        try:
+            if context_type == "badminton":
+                match_id = session.context.get("match_id")
+                player_id = session.context.get("player_id")
+                if not match_id:
+                    return ""
+
+                result = await self._data_layer.get_badminton_context(
+                    match_id=match_id,
+                    player_id=player_id
+                )
+                return result.text
+
+        except Exception as e:
+            self.logger.warning(f"[Chat] Data context load failed: {e}")
+
+        return ""
+
+    def _build_system_prompt(self, skill_prompt: str, data_context: str = "") -> str:
+        """SKILL 프롬프트 + 데이터 컨텍스트 결합"""
+        if data_context:
+            return (
+                f"{skill_prompt}\n\n"
+                f"---\n\n"
+                f"## 현재 경기 데이터\n\n"
+                f"{data_context}\n\n"
+                f"위 데이터를 기반으로 사용자의 질문에 답변하세요. "
+                f"데이터에 없는 내용은 추측하지 마세요."
+            )
+        else:
+            return (
+                f"{skill_prompt}\n\n"
+                f"**참고**: 현재 경기 데이터를 불러올 수 없습니다. "
+                f"일반적인 지식을 기반으로 답변하되, "
+                f"구체적인 통계 데이터가 필요한 질문에는 "
+                f"\"현재 데이터를 불러올 수 없습니다\"라고 안내해주세요."
+            )

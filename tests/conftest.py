@@ -1,7 +1,7 @@
 import pytest
 from httpx import AsyncClient, ASGITransport
 from fastapi.testclient import TestClient
-from unittest.mock import patch, AsyncMock, MagicMock
+from unittest.mock import patch, MagicMock
 
 from main_http import root as app
 
@@ -26,31 +26,29 @@ async def async_client():
 
 
 # ─────────────────────────────────────────────
-# Mock Auth Fixture (btn API Mock)
+# Mock Auth Fixture (자체 JWT 검증 Mock)
 # ─────────────────────────────────────────────
 
 @pytest.fixture
-def mock_user_info():
-    """Mock 사용자 정보"""
-    return [
-        {
-            "email": "test@example.com",
-            "role": "admin",
-            "is_active": True,
-            "full_name": "Test User"
-        }
-    ]
+def mock_jwt_payload():
+    """Mock JWT payload"""
+    return {
+        "email": "test@example.com",
+        "role": "admin",
+        "type": "access",
+        "exp": 9999999999,
+        "iat": 1700000000
+    }
 
 
 @pytest.fixture
-def mock_auth_success(mock_user_info):
+def mock_auth_success(mock_jwt_payload):
     """인증 성공 Mock"""
     with patch(
-        "apps.chatbot.deps.auth_client.verify_token",
-        new_callable=AsyncMock,
-        return_value=mock_user_info
+        "apps.chatbot.deps.auth.verify_token",
+        return_value=mock_jwt_payload
     ):
-        yield mock_user_info
+        yield mock_jwt_payload
 
 
 @pytest.fixture
@@ -59,8 +57,7 @@ def mock_auth_failure():
     from fastapi import HTTPException, status
 
     with patch(
-        "apps.chatbot.deps.auth_client.verify_token",
-        new_callable=AsyncMock,
+        "apps.chatbot.deps.auth.verify_token",
         side_effect=HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired token"
@@ -75,8 +72,7 @@ def mock_auth_service_unavailable():
     from fastapi import HTTPException, status
 
     with patch(
-        "apps.chatbot.deps.auth_client.verify_token",
-        new_callable=AsyncMock,
+        "apps.chatbot.deps.auth.verify_token",
         side_effect=HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Auth service unavailable"

@@ -76,6 +76,14 @@ embed/dist/
 embed/.cache/
 
 # -------------------------------------------
+# Framework Build Artifacts (embed/samples/)
+# -------------------------------------------
+.next/
+.angular/
+out/
+next-env.d.ts
+
+# -------------------------------------------
 # Testing
 # -------------------------------------------
 .pytest_cache/

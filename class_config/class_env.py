@@ -109,3 +109,36 @@ class Config:
     @property
     def btn_internal_api_key(self):
         return self._get('BTN_INTERNAL_API_KEY')
+
+    @property
+    def jwt_secret_key(self):
+        return self._get('JWT_SECRET_KEY')
+
+    # Data Layer
+    @property
+    def btn_api_base_url(self):
+        return self._get('BTN_API_BASE_URL', 'http://localhost:8000')
+
+    @property
+    def btn_api_key(self):
+        return self._get('BTN_API_KEY')
+
+    @property
+    def data_cache_ttl(self):
+        return self._get_int('DATA_CACHE_TTL', 300)
+
+    @property
+    def api_timeout(self):
+        return self._get_int('API_TIMEOUT', 10)
+
+    @property
+    def api_max_retries(self):
+        return self._get_int('API_MAX_RETRIES', 3)
+
+    @property
+    def data_max_tokens(self):
+        return self._get_int('DATA_MAX_TOKENS', 2000)
+
+    @property
+    def enable_data_layer(self):
+        return self._get_bool('ENABLE_DATA_LAYER', False)
