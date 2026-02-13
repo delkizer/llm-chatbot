@@ -18,7 +18,8 @@ from class_config.class_env import Config
 from class_lib.ollama_client import OllamaClient, ChatResponse
 from class_lib.session_client import SessionClient, ChatSession
 from class_lib.response_formatter import ResponseFormatter
-from class_lib.data_layer import DataLayer, FormattedContext
+from class_lib.data_layer.facade import DataLayer
+from class_lib.data_layer.formatter import FormattedContext
 
 
 @dataclass
