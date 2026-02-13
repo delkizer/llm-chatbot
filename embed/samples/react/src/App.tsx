@@ -116,7 +116,7 @@ function App() {
       <div style={{ width: '400px', height: '600px' }}>
         <spo-chatbot
           ref={chatbotRef}
-          api-url="http://localhost:4502"
+          api-url="__CHATBOT_API_URL__"
           token={token}
           theme={theme}
           context-type="badminton"

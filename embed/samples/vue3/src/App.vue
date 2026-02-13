@@ -34,7 +34,7 @@ onMounted(() => {
     <div class="chatbot-container">
       <spo-chatbot
         ref="chatbotRef"
-        api-url="http://localhost:4502"
+        api-url="__CHATBOT_API_URL__"
         :token="token"
         :theme="theme"
         context-type="badminton"

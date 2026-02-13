@@ -8,13 +8,26 @@ spo-chatbot 프레임워크 검증 샘플 게이트웨이
     uvicorn gateway:app --port 5174 --reload
 """
 
+import os
 from pathlib import Path
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.base import BaseHTTPMiddleware
+
+# ============================================================
+# 환경 설정 (.env 2단계 로드 — Config 클래스와 동일 패턴)
+# ============================================================
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+load_dotenv(PROJECT_ROOT / ".env")
+_django_env = os.getenv("DJANGO_ENV", "development")
+load_dotenv(PROJECT_ROOT / f".env.{_django_env}", override=True)
+
+CHATBOT_API_URL = os.getenv("CHATBOT_API_URL", "http://localhost:4502")
 
 # ============================================================
 # 경로 설정
@@ -35,35 +48,60 @@ GATEWAY_TEMPLATES_DIR = BASE_DIR / "templates"
 # ============================================================
 
 DEV_TEST_TOKEN = "dev-test-token"
+API_URL_PLACEHOLDER = "__CHATBOT_API_URL__"
+
+# 치환 대상 Content-Type
+_REPLACEABLE_TYPES = ("text/html", "application/javascript", "text/javascript")
 
 
 class TokenInjectionMiddleware(BaseHTTPMiddleware):
-    """HTML 내 dev-test-token을 실제 토큰으로 서버 사이드 치환한다."""
+    """응답 내 플레이스홀더를 실제 값으로 서버 사이드 치환한다.
+
+    치환 대상:
+    - __CHATBOT_API_URL__ → CHATBOT_API_URL 환경변수 값
+    - dev-test-token → 요청에서 전달된 실제 토큰
+    """
 
     async def dispatch(self, request, call_next):
-        # 요청에서 토큰 추출: ?token= 쿼리 > access_token 쿠키
         token = request.query_params.get("token") or request.cookies.get("access_token")
 
         response = await call_next(request)
         content_type = response.headers.get("content-type", "")
 
-        if token and token != DEV_TEST_TOKEN and "text/html" in content_type:
-            body = b""
-            async for chunk in response.body_iterator:
-                body += chunk
-            html = body.decode("utf-8")
-            html = html.replace(DEV_TEST_TOKEN, token)
-            headers = {
-                k: v for k, v in response.headers.items()
-                if k.lower() not in ("content-length", "content-type")
-            }
-            return Response(
-                content=html,
-                status_code=response.status_code,
-                headers=headers,
-                media_type="text/html",
-            )
-        return response
+        # HTML 또는 JS 응답만 치환
+        if not any(ct in content_type for ct in _REPLACEABLE_TYPES):
+            return response
+
+        # api-url 치환이 필요하거나, 토큰 치환이 필요한 경우
+        needs_api_replace = CHATBOT_API_URL != API_URL_PLACEHOLDER
+        needs_token_replace = token and token != DEV_TEST_TOKEN
+
+        if not needs_api_replace and not needs_token_replace:
+            return response
+
+        body = b""
+        async for chunk in response.body_iterator:
+            body += chunk
+        text = body.decode("utf-8")
+
+        if needs_api_replace:
+            text = text.replace(API_URL_PLACEHOLDER, CHATBOT_API_URL)
+        if needs_token_replace:
+            text = text.replace(DEV_TEST_TOKEN, token)
+
+        headers = {
+            k: v for k, v in response.headers.items()
+            if k.lower() not in ("content-length", "content-type")
+        }
+
+        # 원래 Content-Type 유지
+        media_type = "text/html" if "text/html" in content_type else "application/javascript"
+        return Response(
+            content=text,
+            status_code=response.status_code,
+            headers=headers,
+            media_type=media_type,
+        )
 
 
 # ============================================================
@@ -125,7 +163,6 @@ async def htmx_index(request: Request):
         "request": request,
         "token": "dev-test-token",
         "theme": "bwf",
-        "api_url": "http://localhost:4502",
     })
 
 

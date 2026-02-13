@@ -25,7 +25,7 @@ import { Component, ViewChild, ElementRef, AfterViewInit } from '@angular/core'
       <div class="chatbot-container">
         <spo-chatbot
           #chatbot
-          api-url="http://localhost:4502"
+          api-url="__CHATBOT_API_URL__"
           [attr.token]="token"
           [attr.theme]="theme"
           context-type="badminton"

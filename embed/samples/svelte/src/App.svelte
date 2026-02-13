@@ -27,7 +27,7 @@
   <div class="chatbot-container">
     <spo-chatbot
       bind:this={chatbotEl}
-      api-url="http://localhost:4502"
+      api-url="__CHATBOT_API_URL__"
       {token}
       {theme}
       context-type="badminton"

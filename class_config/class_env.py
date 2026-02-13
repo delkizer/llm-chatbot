@@ -142,3 +142,8 @@ class Config:
     @property
     def enable_data_layer(self):
         return self._get_bool('ENABLE_DATA_LAYER', False)
+
+    # Embed Gateway
+    @property
+    def chatbot_api_url(self):
+        return self._get('CHATBOT_API_URL', 'http://localhost:4502')

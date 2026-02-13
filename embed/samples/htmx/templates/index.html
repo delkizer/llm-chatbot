@@ -104,7 +104,7 @@
     <!-- Jinja2 템플릿에서 서버 사이드 토큰/테마/API URL 주입 -->
     <spo-chatbot
       id="chatbot"
-      api-url="{{ api_url }}"
+      api-url="__CHATBOT_API_URL__"
       token="{{ token }}"
       theme="{{ theme }}"
       context-type="badminton"
