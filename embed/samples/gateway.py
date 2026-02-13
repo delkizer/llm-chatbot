@@ -34,8 +34,10 @@ CHATBOT_API_URL = os.getenv("CHATBOT_API_URL", "http://localhost:4502")
 # ============================================================
 
 BASE_DIR = Path(__file__).resolve().parent
-EMBED_DIST_DIR = BASE_DIR.parent / "dist"
+EMBED_DIR = BASE_DIR.parent
+EMBED_DIST_DIR = EMBED_DIR / "dist"
 EMBED_JS_PATH = EMBED_DIST_DIR / "embed.js"
+DEV_PAGE_PATH = EMBED_DIR / "index.html"
 
 # htmx 템플릿 디렉토리
 HTMX_TEMPLATES_DIR = BASE_DIR / "htmx" / "templates"
@@ -139,13 +141,36 @@ async def serve_embed_js_dist():
 
 
 # ============================================================
-# 랜딩 페이지
+# 개발 페이지 (루트)
 # ============================================================
 
 
 @app.get("/", response_class=HTMLResponse)
-async def landing(request: Request):
-    """샘플 목록 랜딩 페이지"""
+async def dev_page():
+    """개발 페이지 — 로그인 + 챗봇 + 샘플 링크"""
+    html = DEV_PAGE_PATH.read_text(encoding="utf-8")
+
+    # Vite dev 전용 스크립트 → 빌드된 embed.js로 교체
+    html = html.replace(
+        '<script type="module" src="/src/spo-chatbot.ts"></script>',
+        '<script src="/embed.js"></script>',
+    )
+
+    # localhost URL → 환경변수 기반 URL
+    html = html.replace("http://localhost:4502", CHATBOT_API_URL)
+    html = html.replace("http://localhost:5174", "")
+
+    return HTMLResponse(content=html)
+
+
+# ============================================================
+# 프레임워크 샘플 목록
+# ============================================================
+
+
+@app.get("/samples", response_class=HTMLResponse)
+async def samples_landing(request: Request):
+    """8종 프레임워크 샘플 목록"""
     return gateway_templates.TemplateResponse("landing.html", {
         "request": request,
     })
