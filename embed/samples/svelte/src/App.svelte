@@ -1,7 +1,7 @@
 <script lang="ts">
-  let token = 'dev-test-token'
-  let theme = 'bwf'
-  let matchId = 'test-match-001'
+  let token = $state('dev-test-token')
+  let theme = $state('bwf')
+  let matchId = $state('test-match-001')
   let chatbotEl: HTMLElement
 </script>
 
