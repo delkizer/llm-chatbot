@@ -52,6 +52,28 @@ class Config:
     def ollama_debug(self):
         return self._get_bool('OLLAMA_DEBUG', True)
 
+    # LLM Provider
+    @property
+    def llm_provider(self):
+        return self._get('LLM_PROVIDER', 'ollama')
+
+    # Claude
+    @property
+    def claude_endpoint(self):
+        return self._get('CLAUDE_ENDPOINT', 'http://localhost:8080')
+
+    @property
+    def claude_model(self):
+        return self._get('CLAUDE_MODEL', 'claude-sonnet-4-5-20250929')
+
+    @property
+    def claude_timeout(self):
+        return self._get_int('CLAUDE_TIMEOUT', 120)
+
+    @property
+    def claude_max_tokens(self):
+        return self._get_int('CLAUDE_MAX_TOKENS', 4096)
+
     # Database
     @property
     def postgres_user(self):

@@ -36,16 +36,16 @@ class TestHealthEndpoint:
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "ok"
-        assert "ollama_host" in data
-        assert "ollama_model" in data
+        assert "llm" in data
+        assert "model" in data
 
     def test_health_response_format(self, client):
         """응답 형식 확인"""
         response = client.get("/api/chat/health")
 
         data = response.json()
-        assert isinstance(data["ollama_host"], str)
-        assert isinstance(data["ollama_model"], str)
+        assert isinstance(data["llm"], str)
+        assert isinstance(data["model"], str)
 
 
 class TestSwaggerDocs:

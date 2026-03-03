@@ -8,23 +8,26 @@ Ollama 서버와 HTTP 통신을 담당하는 클라이언트 클래스.
 import time
 import json
 from typing import AsyncGenerator, Optional
-from dataclasses import dataclass, field
 
 import httpx
 
 from class_config.class_env import Config
+from class_lib.llm_types import (
+    ChatResponse, ModelInfo,
+    LLMError, LLMConnectionError, LLMTimeoutError, LLMAPIError,
+)
 
 
 # =============================================================================
-# 예외 클래스
+# 예외 클래스 (LLM 공통 예외 상속)
 # =============================================================================
 
-class OllamaError(Exception):
+class OllamaError(LLMError):
     """Ollama 기본 예외"""
     pass
 
 
-class OllamaConnectionError(OllamaError):
+class OllamaConnectionError(OllamaError, LLMConnectionError):
     """연결 실패"""
     pass
 
@@ -34,58 +37,15 @@ class OllamaModelNotFoundError(OllamaError):
     pass
 
 
-class OllamaTimeoutError(OllamaError):
+class OllamaTimeoutError(OllamaError, LLMTimeoutError):
     """타임아웃"""
     pass
 
 
-class OllamaAPIError(OllamaError):
+class OllamaAPIError(OllamaError, LLMAPIError):
     """API 에러 응답"""
     def __init__(self, status_code: int, message: str):
-        self.status_code = status_code
-        self.message = message
-        super().__init__(f"[{status_code}] {message}")
-
-
-# =============================================================================
-# 응답 데이터 클래스
-# =============================================================================
-
-@dataclass
-class ChatResponse:
-    """채팅 응답 (메타데이터 포함)"""
-    content: str
-    model: str
-    response_time_ms: float
-    prompt_tokens: int = 0
-    completion_tokens: int = 0
-    total_tokens: int = 0
-    done: bool = True
-    done_reason: str = ""
-
-    def to_dict(self) -> dict:
-        return {
-            "content": self.content,
-            "model": self.model,
-            "response_time_ms": self.response_time_ms,
-            "tokens": {
-                "prompt": self.prompt_tokens,
-                "completion": self.completion_tokens,
-                "total": self.total_tokens
-            },
-            "done": self.done,
-            "done_reason": self.done_reason
-        }
-
-
-@dataclass
-class ModelInfo:
-    """모델 정보"""
-    name: str
-    size: int = 0
-    digest: str = ""
-    modified_at: str = ""
-    details: dict = field(default_factory=dict)
+        LLMAPIError.__init__(self, status_code, message)
 
 
 # =============================================================================

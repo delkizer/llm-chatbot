@@ -71,10 +71,15 @@ class SessionInfoResponse(BaseModel):
 class HealthResponse(BaseModel):
     """헬스체크 응답"""
     status: str
-    ollama: str
+    llm: str
     redis: str
     skills: list[str]
     model: str
+
+
+class SwitchProviderRequest(BaseModel):
+    """Provider 전환 요청"""
+    provider: str = Field(..., description="전환할 provider 이름 (ollama, claude)")
 
 
 # =============================================================================
@@ -98,7 +103,7 @@ async def health_check(
     """
     서비스 상태 확인 - 인증 불필요
 
-    - Ollama 연결 상태
+    - LLM 연결 상태
     - Redis 연결 상태
     - 사용 가능한 스킬 목록
     """
@@ -106,11 +111,46 @@ async def health_check(
 
     return HealthResponse(
         status="ok" if status_info["healthy"] else "error",
-        ollama=status_info["ollama"],
+        llm=status_info["llm"],
         redis=status_info["redis"],
         skills=status_info["skills"],
-        model=service.ollama.model
+        model=service.llm.model
     )
+
+
+@router.get("/providers", tags=["Provider"])
+async def get_providers(
+    service: ChatService = Depends(get_chat_service)
+):
+    """
+    Provider 상태 조회 - 인증 불필요
+
+    - 전체 provider health 상태
+    - 현재 활성 provider 표시
+    """
+    return await service.get_providers_status()
+
+
+@router.post("/provider", tags=["Provider"])
+async def switch_provider(
+    request: SwitchProviderRequest,
+    payload: dict = Depends(get_current_payload),
+    service: ChatService = Depends(get_chat_service)
+):
+    """
+    Provider 전환 - 인증 필요
+
+    - 런타임으로 LLM Provider 변경
+    - skill/reload와 동일 패턴
+    """
+    try:
+        result = service.switch_provider(request.provider)
+        return result
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
 
 
 @router.post("/session", tags=["Session"], response_model=SessionInfoResponse)

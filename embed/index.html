@@ -150,6 +150,38 @@
       display: inline-block;
     }
 
+    /* ── Provider ── */
+    .provider-area {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .provider-dots {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .provider-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 11px;
+      color: #6b7280;
+    }
+    .provider-dot .dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ef4444;
+    }
+    .provider-dot .dot.ok {
+      background: #22c55e;
+    }
+    .provider-dot .dot.current {
+      box-shadow: 0 0 0 2px #2563eb;
+    }
+
     /* ── Chatbot Demo ── */
     .demo-container {
       display: flex;
@@ -394,6 +426,15 @@
       API URL:
       <input id="api-url" type="text" value="http://localhost:4502" size="30">
     </label>
+    <div class="provider-area">
+      <label>
+        Provider:
+        <select id="provider-select" disabled>
+          <option>Loading...</option>
+        </select>
+      </label>
+      <span class="provider-dots" id="provider-dots"></span>
+    </div>
     <label>
       Token:
       <input id="token" type="text" value="" size="20" placeholder="로그인 시 자동입력" readonly>
@@ -510,6 +551,8 @@
     const btnLogin = document.getElementById('btn-login');
     const statusDot = document.getElementById('status-dot');
     const statusText = document.getElementById('status-text');
+    const providerSelect = document.getElementById('provider-select');
+    const providerDots = document.getElementById('provider-dots');
 
     // 모달 요소
     const loginModal = document.getElementById('login-modal');
@@ -526,6 +569,7 @@
     apiUrlInput.addEventListener('change', (e) => {
       chatbot.setAttribute('api-url', e.target.value);
       checkServerStatus();
+      loadProviderStatus();
     });
     tokenInput.addEventListener('change', (e) => {
       chatbot.setAttribute('token', e.target.value);
@@ -553,8 +597,80 @@
       }
     }
 
+    // ── Provider 상태 조회 ──
+    async function loadProviderStatus() {
+      const apiUrl = apiUrlInput.value.replace(/\/+$/, '');
+      try {
+        const res = await fetch(`${apiUrl}/api/chat/providers`, {
+          signal: AbortSignal.timeout(5000)
+        });
+        if (!res.ok) throw new Error('providers fetch failed');
+        const data = await res.json();
+
+        // 드롭다운 갱신
+        providerSelect.innerHTML = '';
+        providerSelect.disabled = false;
+        const providerNames = Object.keys(data.providers);
+        providerNames.forEach(name => {
+          const info = data.providers[name];
+          const opt = document.createElement('option');
+          opt.value = name;
+          opt.textContent = name;
+          if (info.status === 'error') opt.disabled = true;
+          if (name === data.current) opt.selected = true;
+          providerSelect.appendChild(opt);
+        });
+
+        // 상태 dot 갱신
+        providerDots.innerHTML = '';
+        providerNames.forEach(name => {
+          const info = data.providers[name];
+          const span = document.createElement('span');
+          span.className = 'provider-dot';
+          const dotCls = ['dot'];
+          if (info.status === 'ok') dotCls.push('ok');
+          if (name === data.current) dotCls.push('current');
+          span.innerHTML = `<span class="${dotCls.join(' ')}"></span>${name}`;
+          providerDots.appendChild(span);
+        });
+      } catch {
+        providerSelect.innerHTML = '<option>Unavailable</option>';
+        providerSelect.disabled = true;
+        providerDots.innerHTML = '';
+      }
+    }
+
+    // ── Provider 전환 ──
+    providerSelect.addEventListener('change', async (e) => {
+      const apiUrl = apiUrlInput.value.replace(/\/+$/, '');
+      const token = tokenInput.value;
+      if (!token) {
+        alert('Provider 전환에는 로그인이 필요합니다.');
+        loadProviderStatus();
+        return;
+      }
+      try {
+        const res = await fetch(`${apiUrl}/api/chat/provider`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ provider: e.target.value })
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          alert(`전환 실패: ${err.detail || res.statusText}`);
+        }
+      } catch (err) {
+        alert(`전환 실패: ${err.message}`);
+      }
+      loadProviderStatus();
+    });
+
     // 페이지 로드 시 상태 확인
     checkServerStatus();
+    loadProviderStatus();
 
     // ── 로그인 모달 ──
     function openModal() {
@@ -633,6 +749,9 @@
 
         // 4. 버튼 영역을 사용자 정보로 전환
         showLoggedIn(email);
+
+        // Provider 상태 새로고침
+        loadProviderStatus();
 
         // 5. 샘플 링크에 토큰 쿼리 파라미터 추가
         updateSampleLinks(accessToken);

@@ -15,7 +15,8 @@ from dataclasses import dataclass
 from fastapi import HTTPException
 
 from class_config.class_env import Config
-from class_lib.ollama_client import OllamaClient, ChatResponse
+from class_lib.llm_types import ChatResponse
+from class_lib.llm_client import create_llm_client, create_llm_client_for_provider, KNOWN_PROVIDERS, get_provider_config_info
 from class_lib.session_client import SessionClient, ChatSession
 from class_lib.response_formatter import ResponseFormatter
 from class_lib.data_layer.facade import DataLayer
@@ -173,7 +174,8 @@ class ChatService:
         self.config = Config()
 
         # 의존성 초기화
-        self.ollama = OllamaClient(logger)
+        self.llm = create_llm_client(logger)
+        self._current_provider_name = self.config.llm_provider
         self.session = SessionClient(logger)
         self.skill_loader = SkillLoader(logger, skills_dir)
         self.formatter = ResponseFormatter(logger)
@@ -192,24 +194,24 @@ class ChatService:
         """초기화 로그"""
         self.logger.info("=" * 60)
         self.logger.info("ChatService 초기화")
-        self.logger.info(f"  ollama_model: {self.ollama.model}")
+        self.logger.info(f"  llm_model: {self.llm.model}")
         self.logger.info(f"  max_history: {self.max_history_messages}")
         self.logger.info(f"  skills: {self.skill_loader.list_skills()}")
         self.logger.info("=" * 60)
 
     async def health_check(self) -> dict:
         """서비스 상태 확인"""
-        ollama_ok = await self.ollama.health_check()
+        llm_ok = await self.llm.health_check()
         redis_ok = self.session.ping()
 
         status = {
-            "ollama": "ok" if ollama_ok else "error",
+            "llm": "ok" if llm_ok else "error",
             "redis": "ok" if redis_ok else "error",
             "skills": self.skill_loader.list_skills(),
-            "healthy": ollama_ok and redis_ok
+            "healthy": llm_ok and redis_ok
         }
 
-        self.logger.info(f"[Health] ollama={status['ollama']}, redis={status['redis']}")
+        self.logger.info(f"[Health] llm={status['llm']}, redis={status['redis']}")
         return status
 
     async def chat(
@@ -269,7 +271,7 @@ class ChatService:
         self.logger.info(f"[Chat] LLM messages: {len(messages)}")
 
         # LLM 호출
-        response = await self.ollama.chat(
+        response = await self.llm.chat(
             messages=messages,
             system_prompt=system_prompt,
             temperature=temperature,
@@ -359,7 +361,7 @@ class ChatService:
         # 스트리밍 응답 수집
         full_response = ""
 
-        async for chunk in self.ollama.chat_stream(
+        async for chunk in self.llm.chat_stream(
             messages=messages,
             system_prompt=system_prompt,
             temperature=temperature,
@@ -437,6 +439,70 @@ class ChatService:
         """SKILL 캐시 새로고침"""
         self.skill_loader.clear_cache(skill_name)
         self.logger.info(f"[Chat] Skill reloaded: {skill_name or 'all'}")
+
+    def switch_provider(self, provider_name: str) -> dict:
+        """
+        LLM Provider 런타임 전환
+
+        Args:
+            provider_name: 전환할 provider 이름 (ollama, claude)
+
+        Returns:
+            dict: {"previous": str, "current": str, "model": str}
+
+        Raises:
+            ValueError: unknown provider
+        """
+        previous = self._current_provider_name
+        new_client = create_llm_client_for_provider(provider_name, self.logger)
+
+        self.llm = new_client
+        self._current_provider_name = provider_name
+
+        self.logger.info(f"[Provider] Switched: {previous} -> {provider_name} (model={new_client.model})")
+
+        return {
+            "previous": previous,
+            "current": provider_name,
+            "model": new_client.model,
+        }
+
+    async def get_providers_status(self) -> dict:
+        """
+        전체 provider health 상태 조회
+
+        Returns:
+            dict: {"current": str, "providers": {name: {"status": str, ...}}}
+        """
+        result = {
+            "current": self._current_provider_name,
+            "providers": {},
+        }
+
+        for name in KNOWN_PROVIDERS:
+            try:
+                if name == self._current_provider_name:
+                    # 활성 provider: 기존 클라이언트 사용
+                    healthy = await self.llm.health_check()
+                else:
+                    # 비활성 provider: 임시 클라이언트 생성 후 health check
+                    tmp_client = create_llm_client_for_provider(name, self.logger)
+                    healthy = await tmp_client.health_check()
+
+                config_info = get_provider_config_info(name)
+                result["providers"][name] = {
+                    "status": "ok" if healthy else "error",
+                    **config_info,
+                }
+            except Exception as e:
+                self.logger.warning(f"[Provider] Health check failed for {name}: {e}")
+                config_info = get_provider_config_info(name)
+                result["providers"][name] = {
+                    "status": "error",
+                    **config_info,
+                }
+
+        return result
 
     async def _load_data_context(self, session, context_type: str) -> str:
         """세션 컨텍스트에서 데이터 수집"""

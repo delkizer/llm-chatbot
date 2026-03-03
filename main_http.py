@@ -78,6 +78,7 @@ def custom_openapi():
     auth_excluded_paths = [
         "/api/chat/hello",
         "/api/chat/health",
+        "/api/chat/providers",
         "/api/auth/login",
         "/api/auth/logout",
     ]
